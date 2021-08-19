@@ -113,8 +113,8 @@ class StateGoalNetwork(nn.Module):
         self.goal_embedding = goal_embedding
         self.freeze_embeddings = freeze_embeddings
 
-        state_dim_in = self.state_embedding(torch.tensor(torch.zeros(env.observation_space.shape)[None])).size()[1]
-        goal_dim_in = self.goal_embedding(torch.tensor(torch.zeros(env.goal_space.shape)[None])).size()[1]
+        state_dim_in = self.state_embedding(torch.zeros(env.observation_space.shape)[None]).size(1)
+        goal_dim_in = self.goal_embedding(torch.zeros(env.goal_space.shape)[None]).size(1)
 
         dim_in = state_dim_in + goal_dim_in
 
@@ -243,11 +243,20 @@ class GaussianPolicy(nn.Module):
             horizon = torch.tensor(horizon, dtype=torch.float32, device=device)
         
         mean, logstd = self.forward(obs, goal, horizon=horizon)
-      
-        std = logstd.exp()
-        normal = Normal(mean, std)
-        samples = normal.rsample() 
-        return samples.detach().cpu().numpy()
+
+        if greedy:
+            action = mean
+        else:
+            action = mean + torch.randn_like(mean) * noise
+
+        #std = logstd.exp()
+        #normal = Normal(mean, std)
+        #samples = normal.rsample() 
+        return action.detach().cpu().numpy()
+
+    def loss(self, obs, goal, actions, horizon=None):
+        mean, logstd = self.forward(obs, goal, horizon=horizon)
+        return torch.sum((actions-mean)**2, -1)
 
     def log_prob(self, obs, goal, actions, horizon=None):
         mean, logstd = self.forward(obs, goal, horizon=horizon)

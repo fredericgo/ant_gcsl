@@ -74,7 +74,7 @@ class GoalEnv(gym.Env):
             obs: A numpy array representing observations
         """
         raise NotImplementedError()
-
+    
     def goal_distance(self, state, goal_state):
         if self.goal_metric == 'euclidean':
             diff = self.extract_goal(state)-self.extract_goal(goal_state)
@@ -83,7 +83,7 @@ class GoalEnv(gym.Env):
             raise ValueError('Unknown goal metric %s' % self.goal_metric)
 
     def sample_goal(self):
-        return self.goal_space.sample()
+        raise NotImplementedError()
 
     def get_diagnostics(self, trajectories, desired_goal_states):
         """

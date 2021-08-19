@@ -28,7 +28,7 @@ def get_env_params(env_name, images=False):
         eval_freq=10000,
         eval_episodes=50,
         max_trajectory_length=50,
-        max_timesteps=1e6,
+        max_timesteps=1e7,
         env_name=env_name,
     )
 

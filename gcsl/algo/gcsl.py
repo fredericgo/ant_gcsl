@@ -72,7 +72,7 @@ class GCSL:
         eval_freq=5e3,
         eval_episodes=200,
         save_every_iteration=False,
-        log_tensorboard=False,
+        log_tensorboard=True,
         # Policy Optimization Parameters
         start_policy_timesteps=0,
         batch_size=100,
@@ -114,6 +114,7 @@ class GCSL:
         self.batch_size = batch_size
         self.n_accumulations = n_accumulations
         self.policy_updates_per_step = policy_updates_per_step
+   
         self.policy_optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr)
         
         self.log_tensorboard = log_tensorboard and tensorboard_enabled
@@ -133,11 +134,10 @@ class GCSL:
         horizons_torch = torch.tensor(horizons, dtype=obs_dtype, device=self.device)
         weights_torch = torch.tensor(weights, dtype=torch.float32, device=self.device)
 
-        log_prob = self.policy.log_prob(observations_torch, goals_torch, actions_torch, horizon=horizons_torch)
-        return torch.mean(-log_prob * weights_torch)
+        loss = self.policy.loss(observations_torch, goals_torch, actions_torch, horizon=horizons_torch)
+        return torch.mean(loss * weights_torch)
     
     def sample_trajectory(self, greedy=False, noise=0, render=False):
-
         goal_state = self.env.sample_goal()
         goal = self.env.extract_goal(goal_state)
 
@@ -160,7 +160,7 @@ class GCSL:
             
             actions.append(action)
             state, _, _, _ = self.env.step(action)
-        
+
         return np.stack(states), np.array(actions), goal_state
 
     def take_policy_step(self, buffer=None):
@@ -334,13 +334,11 @@ class GCSL:
             all_states.append(states)
             all_goal_states.append(goal_state)
             final_dist = env.goal_distance(states[-1], goal_state)
-            
             final_dist_vec[index] = final_dist
             success_vec[index] = (final_dist < self.goal_threshold)
 
         all_states = np.stack(all_states)
         all_goal_states = np.stack(all_goal_states)
-
         print('%s num episodes'%prefix, eval_episodes)
         print('%s avg final dist'%prefix,  np.mean(final_dist_vec))
         print('%s success ratio'%prefix, np.mean(success_vec))
@@ -350,5 +348,4 @@ class GCSL:
         diagnostics = env.get_diagnostics(all_states, all_goal_states)
         for key, value in diagnostics.items():
             print('%s %s'%(prefix, key), value)
-        
         return all_states, all_goal_states

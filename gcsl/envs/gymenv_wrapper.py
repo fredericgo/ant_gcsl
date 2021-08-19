@@ -43,12 +43,9 @@ class GymGoalEnvWrapper(goal_env.GoalEnv):
 
     def _base_obs_to_state(self, base_obs):
         obs = base_obs.flatten()
-        goal = self.goal.flatten()
+        goal = base_obs.flatten()
         sgoal = base_obs.flatten()
         return np.r_[obs, goal, sgoal]
-
-    def reset_goal(self):
-        self.goal = self.goal_space.sample()
 
     def reset(self):
         """
@@ -58,7 +55,6 @@ class GymGoalEnvWrapper(goal_env.GoalEnv):
             The initial state
         """
         base_obs = self.base_env.reset()
-        self.reset_goal()
         return self._base_obs_to_state(base_obs)
 
     def render(self):
@@ -121,23 +117,16 @@ class GymGoalEnvWrapper(goal_env.GoalEnv):
         Samples a goal state (of type self.state_space.sample()) using 'desired_goal'
         
         """
-        self.reset_goal()
+        self._sample_goal()
         obs = (10 + self.observation_space.sample()).flatten() # Placeholder - shouldn't actually be used
         goal = self.goal.flatten()
-        sgoal = obs.flatten()
+        sgoal = self.goal.flatten()
         return np.r_[obs, goal, sgoal]
     
     def goal_distance(self, state, goal_state):
-        # Uses distance in state_goal_key to determine distance (useful for images)
-        state_sgoal = self._extract_sgoal(state)
-        goal_sgoal = self._extract_sgoal(goal_state)
-
-        if self.use_internal_rewards and hasattr(self.base_env, 'compute_reward'):
-            distances = np.abs(np.array([
-                self.base_env.compute_reward(achieved, desired, dict()) for achieved, desired in zip(state_sgoal, goal_sgoal)
-            ]))
+        if self.goal_metric == 'euclidean':
+            diff = self.extract_goal(state) - self.extract_goal(goal_state)
+            return np.linalg.norm(diff, axis=-1) 
         else:
-            distances = np.linalg.norm(state_sgoal - goal_sgoal, axis=-1)
-        
-        return distances
-        
+            raise ValueError('Unknown goal metric %s' % self.goal_metric)
+    
