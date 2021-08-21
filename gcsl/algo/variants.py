@@ -32,7 +32,7 @@ def default_markov_policy(env, env_params):
                 layers=[400, 300], #[400, 300], # TD3-size
                 max_horizon=None, # Do not pass in horizon.
                 # max_horizon=get_horizon(env_params), # Use this line if you want to include horizon into the policy
-                freeze_embeddings=True,
+                freeze_embeddings=False,
                 add_extra_conditioning=False,
             )
 

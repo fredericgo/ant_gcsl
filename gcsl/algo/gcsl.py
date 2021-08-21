@@ -152,8 +152,8 @@ class GCSL:
             states.append(state)
 
             observation = self.env.observation(state)
-            horizon = np.arange(self.max_path_length) >= (self.max_path_length - 1 - t) # Temperature encoding of horizon
-            action = self.policy.act_vectorized(observation[None], goal[None], horizon=horizon[None], greedy=greedy, noise=noise)[0]
+            horizon = np.arange(self.max_path_length) >= (self.max_path_length - 1 - t) # Temperature encoding of horizon horizon[None],
+            action = self.policy.act_vectorized(observation[None], goal[None], horizon=None, greedy=greedy, noise=noise)[0]
             
             if not self.is_discrete_action:
                 action = np.clip(action, self.env.action_space.low, self.env.action_space.high)
@@ -329,7 +329,7 @@ class GCSL:
         success_vec = np.zeros(eval_episodes)
 
         for index in tqdm.trange(eval_episodes, leave=True):
-            states, actions, goal_state = self.sample_trajectory(noise=0, greedy=greedy)
+            states, actions, goal_state = self.sample_trajectory(noise=0, greedy=greedy, render=True)
             all_actions.extend(actions)
             all_states.append(states)
             all_goal_states.append(goal_state)

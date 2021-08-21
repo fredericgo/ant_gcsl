@@ -9,6 +9,7 @@ from collections import OrderedDict
 
 class AntGoalEnv(GymGoalEnvWrapper):
     def __init__(self, fixed_start=True, fixed_goal=True):
+        self.fixed_goal = True
         self.inner_env = Env()
         super(AntGoalEnv, self).__init__(
             self.inner_env, observation_key='observation', goal_key='achieved_goal', state_goal_key='state_achieved_goal'
@@ -17,9 +18,9 @@ class AntGoalEnv(GymGoalEnvWrapper):
 
     def _sample_goal(self):
         qpos = self.inner_env.init_qpos + np.random.uniform(
-            size=self.inner_env.model.nq, low=-.1, high=.1
+            size=self.inner_env.model.nq, low=-.5, high=.5
         )
-        qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * .1
+        qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * .5
         self.goal = np.concatenate([qpos[2:], qvel])
 
     def _extract_z(self, goal):
@@ -106,10 +107,6 @@ class AntGoalEnv(GymGoalEnvWrapper):
             ('median final velocity diff', np.median(vel_diff[:, -1])),
 
         ])
-
-
-
-
 
 
 
