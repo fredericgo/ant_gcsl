@@ -16,9 +16,12 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
         
 
     def _sample_goal(self):
-        qpos = self.inner_env.init_qpos.copy() 
-        qpos[9] += np.random.randn()
-        qvel = self.inner_env.init_qvel
+
+        qpos = np.array([0.,  0.,  0.75,  1.,   0.,   0.,   0.,
+                         0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
+        qpos[8] = np.random.randn() * .5
+
+        qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * .1
         self.goal = np.concatenate([qpos[2:], qvel])
 
     def _extract_z(self, goal):

@@ -333,7 +333,7 @@ class GCSL:
         success_vec = np.zeros(eval_episodes)
 
         for index in tqdm.trange(eval_episodes, leave=True):
-            states, actions, goal_state = self.sample_trajectory(noise=0, greedy=greedy, render=True)
+            states, actions, goal_state = self.sample_trajectory(noise=0, greedy=greedy, render=False)
             all_actions.extend(actions)
             all_states.append(states)
             all_goal_states.append(goal_state)
