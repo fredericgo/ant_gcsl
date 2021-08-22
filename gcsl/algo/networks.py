@@ -238,7 +238,6 @@ class GaussianPolicy(nn.Module):
         device = next(self.parameters()).device
         obs = torch.tensor(obs, dtype=torch.float32, device=device)
         goal = torch.tensor(goal, dtype=torch.float32, device=device)
-        
         if horizon is not None:
             horizon = torch.tensor(horizon, dtype=torch.float32, device=device)
         

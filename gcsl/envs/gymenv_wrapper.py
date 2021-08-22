@@ -130,3 +130,5 @@ class GymGoalEnvWrapper(goal_env.GoalEnv):
         else:
             raise ValueError('Unknown goal metric %s' % self.goal_metric)
     
+    def set_state(self, qpos, qvel):
+        self.base_env.set_state(qpos, qvel)

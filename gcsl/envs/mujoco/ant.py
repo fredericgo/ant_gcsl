@@ -37,7 +37,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         qpos = self.init_qpos + self.np_random.uniform(
             size=self.model.nq, low=-1, high=1
         )
-        qvel = self.init_qvel + self.np_random.randn(self.model.nv) * .5
+        qvel = self.init_qvel + self.np_random.randn(self.model.nv) * 0.5
         self.set_state(qpos, qvel)
         return self._get_obs()
 
