@@ -144,6 +144,7 @@ class GCSL:
         states = []
         actions = []
 
+        done = False
         state = self.env.reset()
         for t in range(self.max_path_length):
             if render:
@@ -151,16 +152,18 @@ class GCSL:
 
             states.append(state)
 
+            if done:
+                state = self.env.reset()
+
             observation = self.env.observation(state)
             horizon = np.arange(self.max_path_length) >= (self.max_path_length - 1 - t) # Temperature encoding of horizon
             action = self.policy.act_vectorized(observation[None], goal[None], horizon=horizon[None], greedy=greedy, noise=noise)[0]
             
             if not self.is_discrete_action:
                 action = np.clip(action, self.env.action_space.low, self.env.action_space.high)
-            
+        
             actions.append(action)
-            state, _, _, _ = self.env.step(action)
-
+            state, _, done, _ = self.env.step(action)
         return np.stack(states), np.array(actions), goal_state
 
     def take_policy_step(self, buffer=None):
@@ -251,7 +254,7 @@ class GCSL:
                 if total_timesteps < self.explore_timesteps:
                     states, actions, goal_state = self.sample_trajectory(noise=1)
                 else:
-                    states, actions, goal_state = self.sample_trajectory(greedy=True, noise=self.expl_noise)
+                    states, actions, goal_state = self.sample_trajectory(greedy=False, noise=self.expl_noise)
 
                 # With some probability, put this new trajectory into the validation buffer
                 if self.validation_buffer is not None and np.random.rand() < 0.2:
@@ -288,7 +291,8 @@ class GCSL:
                     if self.summary_writer:
                         self.summary_writer.add_scalar('Losses/Train', running_loss, total_timesteps)
                         self.summary_writer.add_scalar('Losses/Validation', running_validation_loss, total_timesteps)
-                
+                        self.summary_writer.add_scalar('Policy/Action', actions.mean(), total_timesteps)
+
                 # Evaluate, log, and save to disk
                 if timesteps_since_eval >= self.eval_freq:
                     timesteps_since_eval %= self.eval_freq

@@ -3,23 +3,22 @@ from gcsl.envs.gymenv_wrapper import GymGoalEnvWrapper
 import numpy as np
 from gym import spaces
 import gym 
-from gcsl.envs.mujoco.ant import Env
+from gcsl.envs.mujoco.ant_onehand import Env
 from collections import OrderedDict
 
 
-class AntGoalEnv(GymGoalEnvWrapper):
+class AntOnehandGoalEnv(GymGoalEnvWrapper):
     def __init__(self, fixed_start=True, fixed_goal=True):
         self.inner_env = Env()
-        super(AntGoalEnv, self).__init__(
+        super(AntOnehandGoalEnv, self).__init__(
             self.inner_env, observation_key='observation', goal_key='achieved_goal', state_goal_key='state_achieved_goal'
         )
         
 
     def _sample_goal(self):
-        qpos = self.inner_env.init_qpos + np.random.uniform(
-            size=self.inner_env.model.nq, low=-.5, high=.5
-        )
-        qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * .5
+        qpos = self.inner_env.init_qpos.copy() 
+        qpos[9] += np.random.randn()
+        qvel = self.inner_env.init_qvel
         self.goal = np.concatenate([qpos[2:], qvel])
 
     def _extract_z(self, goal):
@@ -106,11 +105,6 @@ class AntGoalEnv(GymGoalEnvWrapper):
             ('median final velocity diff', np.median(vel_diff[:, -1])),
 
         ])
-
-
-
-
-
 
 
 if __name__ == "__main__":

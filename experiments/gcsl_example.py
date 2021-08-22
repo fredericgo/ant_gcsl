@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 output_dir = '/tmp', 
-env_name = 'ant'
+env_name = 'ant_onehand'
 gpu = True
 seed = 0
 

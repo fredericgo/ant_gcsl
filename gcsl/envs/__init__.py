@@ -12,14 +12,17 @@ except:
     print('MuJoCo must be installed.')
 
 from gcsl.envs.ant_env import AntGoalEnv
+from gcsl.envs.ant_onehand_env import AntOnehandGoalEnv
 
-env_names = ['ant']
+env_names = ['ant', 'ant_onehand']
 
 def create_env(env_name):
     """Helper function."""
     assert env_name in env_names
     if env_name == 'ant':
         return AntGoalEnv()
+    elif env_name == 'ant_onehand':
+        return AntOnehandGoalEnv()
 
 def get_env_params(env_name, images=False):
     assert env_name in env_names
@@ -33,6 +36,10 @@ def get_env_params(env_name, images=False):
     )
 
     if env_name == 'ant':
+        env_specific_params = dict(
+            goal_threshold=0.05,
+        )
+    elif env_name == 'ant_onehand':
         env_specific_params = dict(
             goal_threshold=0.05,
         )

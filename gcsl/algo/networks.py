@@ -243,15 +243,18 @@ class GaussianPolicy(nn.Module):
             horizon = torch.tensor(horizon, dtype=torch.float32, device=device)
         
         mean, logstd = self.forward(obs, goal, horizon=horizon)
-
         if greedy:
             action = mean
         else:
-            action = mean + torch.randn_like(mean) * noise
-
-        #std = logstd.exp()
-        #normal = Normal(mean, std)
-        #samples = normal.rsample() 
+            if np.random.rand() < noise:
+                action = mean + torch.randn_like(mean) * noise
+            else:
+                action = mean 
+        """
+        std = logstd.exp()
+        normal = Normal(mean, std)
+        action = normal.rsample() 
+        """
         return action.detach().cpu().numpy()
 
     def loss(self, obs, goal, actions, horizon=None):
