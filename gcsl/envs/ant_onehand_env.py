@@ -17,11 +17,11 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
 
     def _sample_goal(self):
 
-        qpos = self.inner_env.init_qpos.copy() 
+        qpos = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
+
         qpos[1] += np.random.randn()
         qvel = self.inner_env.init_qvel
-        self.goal = np.concatenate([qpos[2:], qvel])
-
+        self.goal = np.concatenate([qpos, qvel])
 
     def goal_distance(self, state, goal_state):
         if self.goal_metric == 'euclidean':

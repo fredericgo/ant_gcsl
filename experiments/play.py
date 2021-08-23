@@ -7,9 +7,9 @@ import sys
 sys.path.append('./')
 
 output_dir = '/tmp', 
-env_name = 'ant'
+env_name = 'ant_onehand'
 
-model_dir = 'runs/ant_2021-08-21_02-17-20'
+model_dir = 'runs/ant_onehand_2021-08-23_01-44-27'
 gpu = True
 seed = 0
 
@@ -58,7 +58,7 @@ def sample_trajectory(greedy=False, noise=0, render=False):
     goal_state = env.sample_goal()
     goal = env.extract_goal(goal_state)
     qpos = np.concatenate([[0, 0], goal[:env.inner_env.model.nq-2]])
-    qvel = env._extract_qvel(goal)
+    qvel = goal[env.inner_env.model.nq-2:]
     env.set_state(qpos, qvel)
 
     for _ in range(100):
