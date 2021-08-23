@@ -48,7 +48,7 @@ def default_gcsl_params(env, env_params):
         eval_episodes=env_params.get('eval_episodes', 50),
         save_every_iteration=False,
         max_timesteps=env_params.get('max_timesteps', 1e6),
-        expl_noise=.1,
+        expl_noise=0,
         batch_size=256,
         n_accumulations=1,
         policy_updates_per_step=1,

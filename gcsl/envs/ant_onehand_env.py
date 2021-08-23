@@ -28,7 +28,7 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
         if self.goal_metric == 'euclidean':
             qdiff = (self.extract_goal(state) -
                      self.extract_goal(goal_state)) 
-            return np.abs(qdiff)[1]
+            return np.abs(qdiff)[..., 1]
             #return np.linalg.norm(qdiff, axis=-1) 
         else:
             raise ValueError('Unknown goal metric %s' % self.goal_metric)
@@ -49,7 +49,6 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
         distances = np.array(
             [self.goal_distance(trajectories[i], np.tile(desired_goal_states[i], (trajectories.shape[1], 1))) for i
              in range(trajectories.shape[0])])
-     
         return OrderedDict([
             ('mean final angle dist', np.mean(distances[:, -1])),
             ('median final angle dist', np.median(distances[:, -1])),
