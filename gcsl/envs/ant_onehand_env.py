@@ -17,7 +17,10 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
 
     def _sample_goal(self):
         qpos = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
-        qpos[1] += np.random.randn()
+        qpos[1] = np.clip(np.random.randn(), 
+                          self.inner_env.joint_range[0], 
+                          self.inner_env.joint_range[1])
+
         qvel = self.inner_env.init_qvel
         self.goal = np.concatenate([qpos, qvel])
 

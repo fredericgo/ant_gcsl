@@ -13,7 +13,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
         mujoco_env.MujocoEnv.__init__(self, xml_file, 5)
         utils.EzPickle.__init__(self)
-    
+        self.joint_range = self.model.jnt_range[1]
 
     def step(self, a):
         xposbefore = self.get_body_com("torso")[0]
@@ -37,7 +37,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         
         #qpos = self.init_qpos.copy()
         qpos = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
-        qpos[1] = np.random.randn() * .5
+        qpos[1] = np.clip(np.random.randn() * .5, self.joint_range[0], self.joint_range[1])
 
         qvel = self.init_qvel + self.np_random.randn(self.model.nv) * .1
         self.set_state(qpos, qvel)

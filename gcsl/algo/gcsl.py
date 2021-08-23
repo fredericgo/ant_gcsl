@@ -251,9 +251,9 @@ class GCSL:
 
                 # Interact in environmenta according to exploration strategy.
                 if total_timesteps < self.explore_timesteps:
-                    states, actions, goal_state = self.sample_trajectory(noise=1)
+                    states, actions, goal_state = self.sample_trajectory(noise=1, render=True)
                 else:
-                    states, actions, goal_state = self.sample_trajectory(greedy=False, noise=self.expl_noise)
+                    states, actions, goal_state = self.sample_trajectory(greedy=False, noise=self.expl_noise, render=True)
 
                 # With some probability, put this new trajectory into the validation buffer
                 if self.validation_buffer is not None and np.random.rand() < 0.2:
