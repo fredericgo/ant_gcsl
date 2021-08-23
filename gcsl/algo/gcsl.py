@@ -173,7 +173,7 @@ class GCSL:
         self.policy_optimizer.zero_grad()
         
         for _ in range(self.n_accumulations):
-            observations, actions, goals, _, horizons, weights = buffer.sample_batch(self.batch_size)
+            observations, actions, goals, _, horizons, weights = buffer.sample_batch(self.batch_size)            
             loss = self.loss_fn(observations, goals, actions, horizons, weights)
             loss.backward()
             avg_loss += loss.detach().cpu().numpy()
@@ -339,7 +339,6 @@ class GCSL:
             final_dist = env.goal_distance(states[-1], goal_state)
             final_dist_vec[index] = final_dist
             success_vec[index] = (final_dist < self.goal_threshold)
-
         all_states = np.stack(all_states)
         all_goal_states = np.stack(all_goal_states)
         print('%s num episodes'%prefix, eval_episodes)

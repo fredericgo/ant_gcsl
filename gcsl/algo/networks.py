@@ -207,7 +207,7 @@ class GaussianPolicy(nn.Module):
         super(GaussianPolicy, self).__init__()
         self.action_space = env.action_space
         self.dim_out = env.action_space.shape[0]
-        self.dim_emb = 100
+        self.dim_emb = 300
         self.net = StateGoalNetwork(env, dim_out=self.dim_emb, **kwargs)      
         self.mean_layer = torch.nn.Linear(self.dim_emb, self.dim_out)
         self.logstd_layer = torch.nn.Linear(self.dim_emb, self.dim_out)
@@ -219,20 +219,6 @@ class GaussianPolicy(nn.Module):
         logstd = torch.clamp(logstd, min=LOG_SIG_MIN, max=LOG_SIG_MAX)
         return mean, logstd
 
-    def sample(self, state):
-        mean, log_std = self.forward(state)
-        std = log_std.exp()
-        normal = Normal(mean, std)
-        x_t = normal.rsample()  # for reparameterization trick (mean + std * N(0,1))
-        y_t = torch.tanh(x_t)
-        action = y_t * self.action_scale + self.action_bias
-        log_prob = normal.log_prob(x_t)
-        # Enforcing Action Bound
-        log_prob -= torch.log(self.action_scale * (1 - y_t.pow(2)) + epsilon)
-        log_prob = log_prob.sum(1, keepdim=True)
-        mean = torch.tanh(mean) * self.action_scale + self.action_bias
-        return action, log_prob, mean
-
     def act_vectorized(self, obs, goal, horizon=None, greedy=False, noise=0,
             marginal_policy=None):
         device = next(self.parameters()).device
@@ -242,29 +228,16 @@ class GaussianPolicy(nn.Module):
             horizon = torch.tensor(horizon, dtype=torch.float32, device=device)
         
         mean, logstd = self.forward(obs, goal, horizon=horizon)
-        if greedy:
-            action = mean
+
+        if not greedy and np.random.rand() < noise:
+            action = mean + torch.randn_like(mean) 
         else:
-            if np.random.rand() < noise:
-                action = mean + torch.randn_like(mean) * noise
-            else:
-                action = mean 
-        """
-        std = logstd.exp()
-        normal = Normal(mean, std)
-        action = normal.rsample() 
-        """
+            action = mean 
         return action.detach().cpu().numpy()
 
     def loss(self, obs, goal, actions, horizon=None):
         mean, logstd = self.forward(obs, goal, horizon=horizon)
-        return torch.sum((actions-mean)**2, -1)
+        return torch.square(actions-mean).sum(-1)
 
-    def log_prob(self, obs, goal, actions, horizon=None):
-        mean, logstd = self.forward(obs, goal, horizon=horizon)
-        std = logstd.exp()
-        normal = Normal(mean, std)
-      
-        log_prob = normal.log_prob(actions).sum(-1)
-        return log_prob
+
 

@@ -16,9 +16,7 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
         
 
     def _sample_goal(self):
-
         qpos = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
-
         qpos[1] += np.random.randn()
         qvel = self.inner_env.init_qvel
         self.goal = np.concatenate([qpos, qvel])
@@ -26,7 +24,7 @@ class AntOnehandGoalEnv(GymGoalEnvWrapper):
     def goal_distance(self, state, goal_state):
         if self.goal_metric == 'euclidean':
             qdiff = (self.extract_goal(state) -
-                     self.extract_goal(goal_state))
+                     self.extract_goal(goal_state)) 
             return np.abs(qdiff)[1]
             #return np.linalg.norm(qdiff, axis=-1) 
         else:

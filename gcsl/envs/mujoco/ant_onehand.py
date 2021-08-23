@@ -20,7 +20,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         self.do_simulation(a, self.frame_skip)
         xposafter = self.get_body_com("torso")[0]
         state = self.state_vector()
-        notdone = np.isfinite(state).all() and state[2] >= 0 and state[2] <= 1.0
+        notdone = np.isfinite(state).all() 
         done = not notdone
         ob = self._get_obs()
         return (ob, 0, done, dict(),)
