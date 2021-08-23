@@ -151,7 +151,6 @@ class GCSL:
                 self.env.render()
 
             states.append(state)
-
             if done:
                 state = self.env.reset()
 

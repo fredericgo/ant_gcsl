@@ -54,5 +54,5 @@ def default_gcsl_params(env, env_params):
         policy_updates_per_step=1,
         train_policy_freq=None,
         log_dir=f'runs/{env_name}_{datetime_st}',
-        lr=1e-4,
+        lr=1e-5,
     )
