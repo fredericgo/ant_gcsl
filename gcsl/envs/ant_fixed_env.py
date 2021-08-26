@@ -36,16 +36,6 @@ class AntFixedGoalEnv(GymGoalEnvWrapper):
         else:
             raise ValueError('Unknown goal metric %s' % self.goal_metric)
 
-    def velocity_distance(self, state, goal_state):
-        if self.goal_metric == 'euclidean':
-            qdiff = (self._extract_qvel(self.extract_goal(state)) -
-                     self._extract_qvel(self.extract_goal(goal_state)))
-            return np.abs(qdiff).mean(axis=-1)
-            #return np.linalg.norm(qdiff, axis=-1) 
-        else:
-            raise ValueError('Unknown goal metric %s' % self.goal_metric)
-
-
     def get_diagnostics(self, trajectories, desired_goal_states):
         """
         Gets things to log

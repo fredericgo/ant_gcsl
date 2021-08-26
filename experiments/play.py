@@ -6,10 +6,13 @@ import pathlib
 import sys
 sys.path.append('./')
 
-output_dir = '/tmp', 
-env_name = 'ant_onehand'
+import imageio
 
-model_dir = 'runs/ant_onehand_2021-08-23_16-00-45'
+output_dir = '/tmp', 
+env_name = 'ant'
+
+model_dir = 'runs/ant_2021-08-21_02-17-20'
+video_file = 'video.mp4'
 gpu = True
 seed = 0
 
@@ -30,7 +33,7 @@ env_params = envs.get_env_params(env_name)
 
 env, policy, replay_buffer, gcsl_kwargs = variants.get_params(env, env_params)
 
-max_path_length = 500
+max_path_length = 50
 
 
 def load_policy(model_dir):
@@ -54,15 +57,16 @@ def sample_init(greedy=False, noise=0, render=False):
 
         
 
-def sample_trajectory(greedy=False, noise=0, render=False):
+def sample_trajectory(writer, greedy=False, noise=0):
     goal_state = env.sample_goal()
     goal = env.extract_goal(goal_state)
-    qpos = goal[:env.inner_env.model.nq]
-    qvel = goal[env.inner_env.model.nq:]
+    qpos = np.concatenate([[0, 0],goal[:(env.inner_env.model.nq-2)]])
+    qvel = goal[(env.inner_env.model.nq-2):]
     env.set_state(qpos, qvel)
 
     for _ in range(100):
-        env.render()
+        writer.append_data(env.render(mode="rgb_array"))
+
     
     states = []
     actions = []
@@ -70,8 +74,7 @@ def sample_trajectory(greedy=False, noise=0, render=False):
     state = env.reset()
     done = False
     for t in range(max_path_length):
-        if render:
-            env.render()
+        writer.append_data(env.render(mode="rgb_array"))
 
         states.append(state)
         if done:
@@ -89,8 +92,10 @@ def sample_trajectory(greedy=False, noise=0, render=False):
     return np.stack(states), np.array(actions), goal_state
 
 load_policy(model_dir)
-sample_trajectory(render=True)
-sample_trajectory(render=True)
+
+writer = imageio.get_writer(video_file, fps=30) 
+for _ in range(20):
+    sample_trajectory(writer)
 
 #sample_init(noise=1, render=True)
 
