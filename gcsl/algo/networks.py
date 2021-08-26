@@ -207,7 +207,7 @@ class GaussianPolicy(nn.Module):
         super(GaussianPolicy, self).__init__()
         self.action_space = env.action_space
         self.dim_out = env.action_space.shape[0]
-        self.dim_emb = 300
+        self.dim_emb = 100
         self.net = StateGoalNetwork(env, dim_out=self.dim_emb, **kwargs)      
         self.mean_layer = torch.nn.Linear(self.dim_emb, self.dim_out)
         self.logstd_layer = torch.nn.Linear(self.dim_emb, self.dim_out)

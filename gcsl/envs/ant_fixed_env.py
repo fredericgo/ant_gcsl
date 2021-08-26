@@ -35,6 +35,7 @@ class AntFixedGoalEnv(GymGoalEnvWrapper):
         else:
             raise ValueError('Unknown goal metric %s' % self.goal_metric)
 
+<<<<<<< HEAD
 
     def reward_function(self, state, goal):
         distance = -torch.sum((state[:8] - goal[:8])**2)
@@ -43,6 +44,8 @@ class AntFixedGoalEnv(GymGoalEnvWrapper):
         velocity_reward = np.exp(velocity_diff)
         return distance_reward + 0.1 * velocity_reward
 
+=======
+>>>>>>> 85c82c784bf8af032607aaad63bffcdb5ceab42c
     def get_diagnostics(self, trajectories, desired_goal_states):
         """
         Gets things to log

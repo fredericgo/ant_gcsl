@@ -57,8 +57,8 @@ class GymGoalEnvWrapper(goal_env.GoalEnv):
         base_obs = self.base_env.reset()
         return self._base_obs_to_state(base_obs)
 
-    def render(self):
-        return self.base_env.render()
+    def render(self, mode='human'):
+        return self.base_env.render(mode=mode)
         
     def step(self, a):
         """
