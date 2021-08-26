@@ -1,3 +1,4 @@
+from Cython.Compiler.ExprNodes import InnerFunctionNode
 from gcsl.envs.gymenv_wrapper import GymGoalEnvWrapper
 
 import numpy as np
@@ -17,9 +18,16 @@ class AntGoalEnv(GymGoalEnvWrapper):
         
 
     def _sample_goal(self):
-        qpos = self.inner_env.init_qpos + np.random.uniform(
-            size=self.inner_env.model.nq, low=-.5, high=.5
-        )
+        nq = self.inner_env.model.nq
+        num_jnt = self.inner_env.model.njnt
+        
+        q0 = self.inner_env.init_qpos[:7] + np.random.randn(7) * .5
+        qb = np.random.randn(nq - 7) * .5
+        qb = [np.clip(qb[i-1], 
+                        self.inner_env.model.jnt_range[i][0], 
+                        self.inner_env.model.jnt_range[i][1]) 
+                        for i in range(1, num_jnt)]
+        qpos = np.concatenate([q0, qb])
         qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * .5
         self.goal = np.concatenate([qpos[2:], qvel])
 

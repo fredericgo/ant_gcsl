@@ -73,6 +73,8 @@ class GymGoalEnvWrapper(goal_env.GoalEnv):
         """
         ns, reward, done, infos = self.base_env.step(a)
         infos['observation'] = ns
+        distance = -np.linalg.norm(ns - self.goal, ord=2)
+        reward = np.exp(distance)
         ns = self._base_obs_to_state(ns)
         return ns, reward, done, infos
 

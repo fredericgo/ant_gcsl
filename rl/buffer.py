@@ -27,8 +27,8 @@ class ReplayBuffer:
             (buffer_size, max_trajectory_length, *env.state_space.shape),
             dtype=env.state_space.dtype
         )
-        self._desired_states = np.zeros(
-            (buffer_size, *env.state_space.shape),
+        self._next_states = np.zeros(
+            (buffer_size, max_trajectory_length,*env.state_space.shape),
             dtype=env.state_space.dtype
         )
         
@@ -47,7 +47,7 @@ class ReplayBuffer:
         self.max_buffer_size = buffer_size
         self.max_trajectory_length = max_trajectory_length
     
-    def add_trajectory(self, states, actions, desired_state, length_of_traj=None):
+    def add_trajectory(self, states, actions, next_state, goal, length_of_traj=None):
         """
         Adds a trajectory to the buffer
 
@@ -66,7 +66,7 @@ class ReplayBuffer:
         self._actions[self.pointer] = actions
         self._states[self.pointer] = states
         self._internal_goals[self.pointer] = self.env._extract_sgoal(states)
-        self._desired_states[self.pointer] = desired_state
+        self._next_states[self.pointer] = next_state
         if length_of_traj is None:
             length_of_traj = self.max_trajectory_length
         self._length_of_traj[self.pointer] = length_of_traj
@@ -109,6 +109,8 @@ class ReplayBuffer:
     def _get_batch(self, traj_idxs, time_state_idxs, time_goal_idxs):
         batch_size = len(traj_idxs)
         observations = self.env.observation(self._states[traj_idxs, time_state_idxs])
+        next_observations = self.env.observation(self._next_states[traj_idxs, time_state_idxs])
+
         actions = self._actions[traj_idxs, time_state_idxs]
         goals = self.env.extract_goal(self._states[traj_idxs, time_goal_idxs])
         
@@ -118,7 +120,7 @@ class ReplayBuffer:
 
         weights = np.ones(batch_size)
 
-        return observations, actions, goals, lengths, horizons, weights
+        return observations, actions, next_observations, goals, lengths, horizons, weights
     
     def save(self, file_name):
         np.savez(file_name,

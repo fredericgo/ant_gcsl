@@ -211,6 +211,12 @@ class GaussianPolicy(nn.Module):
         self.net = StateGoalNetwork(env, dim_out=self.dim_emb, **kwargs)      
         self.mean_layer = torch.nn.Linear(self.dim_emb, self.dim_out)
         self.logstd_layer = torch.nn.Linear(self.dim_emb, self.dim_out)
+        # action rescaling
+    
+        self.action_scale = np.array(
+            (env.action_space.high - env.action_space.low) / 2.)
+        self.action_bias = np.array(
+            (env.action_space.high + env.action_space.low) / 2.)
 
     def forward(self, obs, goal, horizon):
         z = self.net(obs, goal, horizon=horizon)
@@ -228,11 +234,13 @@ class GaussianPolicy(nn.Module):
             horizon = torch.tensor(horizon, dtype=torch.float32, device=device)
         
         mean, logstd = self.forward(obs, goal, horizon=horizon)
+        y = torch.tanh(mean)
+        action_scale = torch.tensor(self.action_scale, dtype=torch.float32, device=device)
+        action_bias = torch.tensor(self.action_bias, dtype=torch.float32, device=device)
 
+        action = y * action_scale + action_bias
         if not greedy and np.random.rand() < noise:
-            action = mean + torch.randn_like(mean) 
-        else:
-            action = mean 
+            action += torch.randn_like(mean) 
         return action.detach().cpu().numpy()
 
     def loss(self, obs, goal, actions, horizon=None):

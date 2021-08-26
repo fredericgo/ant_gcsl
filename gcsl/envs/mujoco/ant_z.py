@@ -37,14 +37,8 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         nq = self.model.nq
         num_jnt = self.model.njnt
         
-        q0 = self.init_qpos[:7] + np.random.randn(7) * .5
-        qb = np.random.randn(nq - 7) * .5
-        qb = [np.clip(qb[i-1], 
-                        self.model.jnt_range[i][0], 
-                        self.model.jnt_range[i][1]) 
-                        for i in range(1, num_jnt)]
-        qpos = np.concatenate([q0, qb])
-        qvel = self.init_qvel + np.random.randn(self.model.nv) * .5
+        qpos = self.init_qpos + np.random.randn(self.model.nq) * .1
+        qvel = self.init_qvel + np.random.randn(self.model.nv) * .1
         self.set_state(qpos, qvel)
         return self._get_obs()
 

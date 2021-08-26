@@ -14,8 +14,9 @@ except:
 from gcsl.envs.ant_env import AntGoalEnv
 from gcsl.envs.ant_onehand_env import AntOnehandGoalEnv
 from gcsl.envs.ant_fixed_env import AntFixedGoalEnv
+from gcsl.envs.ant_z_env import AntZGoalEnv
 
-env_names = ['ant', 'ant_onehand', 'ant_fixed']
+env_names = ['ant', 'ant_onehand', 'ant_fixed', 'ant_z']
 
 def create_env(env_name):
     """Helper function."""
@@ -26,6 +27,8 @@ def create_env(env_name):
         return AntOnehandGoalEnv()
     elif env_name == 'ant_fixed':
         return AntFixedGoalEnv()
+    elif env_name == 'ant_z':
+        return AntZGoalEnv()
 
 def get_env_params(env_name, images=False):
     assert env_name in env_names
@@ -47,6 +50,11 @@ def get_env_params(env_name, images=False):
             goal_threshold=0.05,
         )
     elif env_name == 'ant_fixed':
+        env_specific_params = dict(
+            goal_threshold=0.05,
+            max_path_length=50,
+        )
+    elif env_name == 'ant_z':
         env_specific_params = dict(
             goal_threshold=0.05,
         )

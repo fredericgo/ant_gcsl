@@ -1,47 +1,45 @@
+from Cython.Compiler.ExprNodes import InnerFunctionNode
 from gcsl.envs.gymenv_wrapper import GymGoalEnvWrapper
 
 import numpy as np
 from gym import spaces
 import gym 
-from gcsl.envs.mujoco.ant_fixed import Env
+from gcsl.envs.mujoco.ant import Env
 from collections import OrderedDict
 
 
-class AntFixedGoalEnv(GymGoalEnvWrapper):
+class AntZGoalEnv(GymGoalEnvWrapper):
     def __init__(self, fixed_start=True, fixed_goal=True):
         self.fixed_goal = True
         self.inner_env = Env()
-        super(AntFixedGoalEnv, self).__init__(
+        super(AntZGoalEnv, self).__init__(
             self.inner_env, observation_key='observation', goal_key='achieved_goal', state_goal_key='state_achieved_goal'
         )
         
-    def _sample_goal(self):
-        qpos = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
-        qpos = np.random.randn(self.inner_env.model.nq) * .5
 
-        qpos = [np.clip(qpos[i], 
-                        self.inner_env.model.jnt_range[i][0], 
-                        self.inner_env.model.jnt_range[i][1]) 
-                        for i in range(self.inner_env.model.nq)]
+    def _sample_goal(self):
+        nq = self.inner_env.model.nq
+        nv = self.inner_env.model.nv
         
-        qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * 0.5
-        self.goal = np.concatenate([qpos, qvel])
+        qpos = self.inner_env.init_qpos + np.random.randn(nq) * .1
+        qvel = self.inner_env.init_qvel + np.random.randn(nv) * .1
+
+        qpos[2] = np.random.randn(1)
+        self.goal = np.concatenate([qpos[2:], qvel])
+
+    def _extract_z(self, goal):
+        return goal[..., :1]
+     
 
     def goal_distance(self, state, goal_state):
         if self.goal_metric == 'euclidean':
             qdiff = (self.extract_goal(state) -
                      self.extract_goal(goal_state))
-            return np.linalg.norm(qdiff, axis=-1) 
+            return np.abs(qdiff).mean(axis=-1)
+            #return np.linalg.norm(qdiff, axis=-1) 
         else:
             raise ValueError('Unknown goal metric %s' % self.goal_metric)
 
-
-    def reward_function(self, state, goal):
-        distance = -torch.sum((state[:8] - goal[:8])**2)
-        distance_reward = np.exp(distance)
-        velocity_diff = -.5 * np.linalg.norm(state[8:] - goal[8:], ord=2)
-        velocity_reward = np.exp(velocity_diff)
-        return distance_reward + 0.1 * velocity_reward
 
     def get_diagnostics(self, trajectories, desired_goal_states):
         """
@@ -54,16 +52,16 @@ class AntFixedGoalEnv(GymGoalEnvWrapper):
         Returns:
             An Ordered Dictionary containing k,v pairs to be logged
         """
-        distances = np.array(
-            [self.goal_distance(trajectories[i], np.tile(desired_goal_states[i], (trajectories.shape[1], 1))) for i
+        z_distances = np.array(
+            [self.z_distance(trajectories[i], np.tile(desired_goal_states[i], (trajectories.shape[1], 1))) for i
              in range(trajectories.shape[0])])
-
+    
      
         return OrderedDict([
-            ('mean final angle dist', np.mean(distances[:, -1])),
-            ('median final angle dist', np.median(distances[:, -1])),
-
+            ('mean final z dist', np.mean(z_distances[:, -1])),
+            ('median final z dist', np.median(z_distances[:, -1])),
         ])
+
 
 
 if __name__ == "__main__":
