@@ -1,5 +1,4 @@
-from Cython.Compiler.ExprNodes import InnerFunctionNode
-from gcsl.envs.gymenv_wrapper import GymGoalEnvWrapper
+from gcsl.envs.ant_goal_base import AntGoalBase
 
 import numpy as np
 from gym import spaces
@@ -8,32 +7,13 @@ from gcsl.envs.mujoco.ant import Env
 from collections import OrderedDict
 
 
-class AntGoalEnv(GymGoalEnvWrapper):
-    def __init__(self, fixed_start=True, fixed_goal=True):
-        self.fixed_goal = True
-        self.inner_env = Env()
-        super(AntGoalEnv, self).__init__(
-            self.inner_env, observation_key='observation', goal_key='achieved_goal', state_goal_key='state_achieved_goal'
-        )
+class AntFixedGoalEnv(AntGoalBase):
+    def __init__(self, fixed_start=True):
+        super(AntFixedGoalEnv, self).__init__()
         
-
     def _sample_goal(self):
-        nq = self.inner_env.model.nq
-        num_jnt = self.inner_env.model.njnt
-        noise = 1
-        #q0 = self.inner_env.init_qpos[:7] 
-        #q0[3:7] += np.random.randn(4) * .5
-        q0 = self.inner_env.init_qpos[:7] + np.random.randn(7) * noise
-        q0[2] = np.maximum(q0[2], 0.25)
-
-        qb = np.random.randn(nq - 7) * noise
-
-        qb = [np.clip(qb[i-1], 
-                        self.inner_env.model.jnt_range[i][0], 
-                        self.inner_env.model.jnt_range[i][1]) 
-                        for i in range(1, num_jnt)]
-        qpos = np.concatenate([q0, qb])
-        qvel = self.inner_env.init_qvel + np.random.randn(self.inner_env.model.nv) * noise
+        qpos = self.env.init_qpos
+        qvel = self.env.init_qvel
         self.goal = np.concatenate([qpos[2:], qvel])
 
     def _extract_z(self, goal):
@@ -43,10 +23,10 @@ class AntGoalEnv(GymGoalEnvWrapper):
         return goal[..., 1:5]
 
     def _extract_q(self, goal):
-        return goal[..., 5:self.inner_env.model.nq-2]
+        return goal[..., 5:self.env.model.nq-2]
 
     def _extract_qvel(self, goal):
-        return goal[..., -self.inner_env.model.nv:]
+        return goal[..., -self.env.model.nv:]
 
     def rotation_distance(self, state, goal_state):
         if self.goal_metric == 'euclidean':

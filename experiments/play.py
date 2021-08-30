@@ -11,7 +11,7 @@ import imageio
 output_dir = '/tmp', 
 env_name = 'ant'
 
-model_dir = 'runs/ant_2021-08-21_02-17-20'
+model_dir = 'runs/ant_2021-08-26_22-23-54'
 video_file = 'video.mp4'
 gpu = True
 seed = 0

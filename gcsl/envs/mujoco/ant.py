@@ -36,15 +36,20 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
     def reset_model(self):
         nq = self.model.nq
         num_jnt = self.model.njnt
-        
-        q0 = self.init_qpos[:7] + np.random.randn(7) * .5
-        qb = np.random.randn(nq - 7) * .5
+        noise = .5
+        #q0 = self.init_qpos[:7] 
+
+        #q0[3:7] += np.random.randn(4) * .5
+        q0 = self.init_qpos[:7] + np.random.randn(7) * noise
+        q0[2] = np.maximum(q0[2], 0.25)
+        qb = np.random.randn(nq - 7) * noise
+
         qb = [np.clip(qb[i-1], 
                         self.model.jnt_range[i][0], 
                         self.model.jnt_range[i][1]) 
                         for i in range(1, num_jnt)]
         qpos = np.concatenate([q0, qb])
-        qvel = self.init_qvel + np.random.randn(self.model.nv) * .5
+        qvel = self.init_qvel + np.random.randn(self.model.nv) * noise
         self.set_state(qpos, qvel)
         return self._get_obs()
 
