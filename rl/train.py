@@ -8,7 +8,9 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from rl.sac import SAC
-from rl.buffer import ReplayBuffer
+#from rl.buffer import ReplayBuffer
+from rl.replay_memory import ReplayMemory
+
 from gcsl.envs import create_env
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
@@ -22,7 +24,7 @@ parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
 parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
-parser.add_argument('--lr', type=float, default=0.0003, metavar='G',
+parser.add_argument('--lr', type=float, default=3e-4, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=1, metavar='G',
                     help='Temperature parameter α determines the relative importance of the entropy\
@@ -39,7 +41,7 @@ parser.add_argument('--max_trajectory_length', type=int, default=50, metavar='N'
                     help='maximum number of steps (default: 1000000)')
 parser.add_argument('--hidden_size', type=int, default=512, metavar='N',
                     help='hidden size (default: 256)')
-parser.add_argument('--updates_per_step', type=int, default=10, metavar='N',
+parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
 parser.add_argument('--start_steps', type=int, default=10000, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
@@ -47,7 +49,7 @@ parser.add_argument('--target_update_interval', type=int, default=1, metavar='N'
                     help='Value target update per no. of updates per step (default: 1)')
 parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
-parser.add_argument('--reward_scaling', type=int, default=10, metavar='N',
+parser.add_argument('--reward_scaling', type=int, default=10., metavar='N',
                     help='size of replay buffer (default: 10000000)')
 parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
@@ -55,7 +57,7 @@ parser.add_argument('--checkpoint_interval', type=int, default=1000,
                     help='checkpoint training model every # steps')
 parser.add_argument('--log_interval', type=int, default=10, 
                     help='checkpoint training model every # steps')
-parser.add_argument('--eval_interval', type=int, default=1000, 
+parser.add_argument('--eval_interval', type=int, default=100, 
                     help='checkpoint training model every # steps')
 
 args = parser.parse_args()
@@ -82,7 +84,7 @@ writer = SummaryWriter(log_dir)
 
 
 # Memory
-memory = ReplayBuffer(env, args.max_trajectory_length, args.replay_size)
+memory = ReplayMemory(args.replay_size, args.seed)
 
 def sample_trajectory(env, greedy=False, noise=0, render=False):
     goal_state = env.sample_goal()
@@ -154,25 +156,45 @@ for i_episode in itertools.count(1):
     episode_reward = 0
     episode_steps = 0
     done = False
+    
+    goal_state = env.sample_goal()
+    goal = env.extract_goal(goal_state)
     state = env.reset()
 
-    states, actions, next_states, goal_state, _ =  sample_trajectory(env)
-    memory.add_trajectory(states, actions, next_states, goal_state) # Append transition to memory
-
-    for i in range(args.updates_per_step):
-        # Update parameters of all the networks
-        critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
-        writer.add_scalar('loss/critic_1', critic_1_loss, updates)
-        writer.add_scalar('loss/critic_2', critic_2_loss, updates)
-        writer.add_scalar('loss/policy', policy_loss, updates)
-        writer.add_scalar('loss/entropy_loss', ent_loss, updates)
-        writer.add_scalar('entropy_temprature/alpha', alpha, updates)
-        updates += 1
-    
-
-    if total_numsteps > args.num_steps:
-        break
+    while not done:
+        if args.start_steps > total_numsteps:
+            action = env.action_space.sample()  # Sample random action
+        else:
+            action = agent.select_action(state, goal)  # Sample action from policy
         
+        if len(memory) > args.batch_size:
+            for i in range(args.updates_per_step):
+                # Update parameters of all the networks
+                critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
+                writer.add_scalar('loss/critic_1', critic_1_loss, updates)
+                writer.add_scalar('loss/critic_2', critic_2_loss, updates)
+                writer.add_scalar('loss/policy', policy_loss, updates)
+                writer.add_scalar('loss/entropy_loss', ent_loss, updates)
+                writer.add_scalar('entropy_temprature/alpha', alpha, updates)
+                updates += 1
+        
+
+        next_state, reward, done, _ = env.step(action) # Step
+        episode_steps += 1
+        total_numsteps += 1
+        episode_reward += reward
+        # Ignore the "done" signal if it comes from hitting the time horizon.
+        # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
+        mask = 1 if episode_steps == args.max_trajectory_length else float(not done)
+        memory.push(state, action, reward, next_state, goal, mask) # Append transition to memory
+        state = next_state
+
+        if episode_steps == args.max_trajectory_length: 
+            break
+        
+        if total_numsteps > args.num_steps:
+            break
+            
     if i_episode % args.eval_interval == 0 and args.eval is True:
         evaluate_policy(env, total_timesteps=updates)
 
@@ -181,6 +203,6 @@ for i_episode in itertools.count(1):
         print("----------------------------------------")
         print(f"Save Model: {i_episode} episodes.")
         print("----------------------------------------")
-
+    
 env.close()
 

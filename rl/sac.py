@@ -58,29 +58,33 @@ class SAC(object):
         return action.detach().cpu().numpy()[0]
 
     def reward_function(self, state, goal):
-        nq = self.env.inner_env.model.nq
-        distance = -2 * torch.sum((state[...,:nq-2] - goal[...,:nq-2])**2, -1)
+        nq = self.env.env.model.nq
+        distance =  - torch.sum((state[...,:nq-2] - goal[...,:nq-2])**2, -1)
         distance_reward = torch.exp(distance)
         velocity_diff = -.5 * torch.sum((state[...,(nq-2):] - goal[...,(nq-2):])**2, -1)
         velocity_reward = torch.exp(velocity_diff)
-        return distance_reward + 0.1 * velocity_reward
+        return distance_reward + velocity_reward
 
     def update_parameters(self, memory, batch_size, updates):
         # Sample a batch from memory
-        #state_batch, action_batch, reward_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size)
-        state_batch, action_batch, next_state_batch, goal_batch, _, _, _ = memory.sample_batch(self.batch_size)            
+        state_batch, action_batch, reward_batch, next_state_batch, goal_batch, mask_batch = memory.sample(batch_size=batch_size)
+        #state_batch, action_batch, next_state_batch, goal_batch, _, _, _ = memory.sample_batch(self.batch_size)            
         state_batch = torch.FloatTensor(state_batch).to(self.device)
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         action_batch = torch.FloatTensor(action_batch).to(self.device)
         goal_batch = torch.FloatTensor(goal_batch).to(self.device)
+        reward_batch = torch.FloatTensor(reward_batch).to(self.device).unsqueeze(-1)
+        mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
+
+        state_batch = self.env.observation(state_batch)
+        next_state_batch = self.env.observation(next_state_batch)
 
         with torch.no_grad():
             next_state_action, next_state_log_pi, _ = self.policy.sample(next_state_batch, goal_batch)
             qf1_next_target, qf2_next_target = self.critic_target(next_state_batch, next_state_action, goal_batch)
             min_qf_next_target = torch.min(qf1_next_target, qf2_next_target) - self.alpha * next_state_log_pi
-            reward = self.reward_scaling * self.reward_function(state_batch, goal_batch).unsqueeze(-1)
-            next_q_value = reward + self.gamma * (min_qf_next_target)
-            
+            next_q_value = reward_batch + mask_batch * self.gamma * (min_qf_next_target)
+
         qf1, qf2 = self.critic(state_batch, action_batch, goal_batch)  # Two Q-functions to mitigate positive bias in the policy improvement step
         qf1_loss = F.mse_loss(qf1, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
         qf2_loss = F.mse_loss(qf2, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]

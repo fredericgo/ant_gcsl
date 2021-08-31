@@ -9,9 +9,9 @@ sys.path.append('./')
 import imageio
 
 output_dir = '/tmp', 
-env_name = 'ant'
+env_name = 'ant_fixed_goal'
 
-model_dir = 'runs/ant_2021-08-26_22-23-54'
+model_dir = 'runs/ant_fixed_goal_2021-08-30_13-58-51'
 video_file = 'video.mp4'
 gpu = True
 seed = 0
@@ -94,7 +94,7 @@ def sample_trajectory(writer, greedy=False, noise=0):
 load_policy(model_dir)
 
 writer = imageio.get_writer(video_file, fps=30) 
-for _ in range(20):
+for _ in range(10):
     sample_trajectory(writer)
 
 #sample_init(noise=1, render=True)
