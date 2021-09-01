@@ -72,15 +72,13 @@ class AntGoalBase(goal_env.GoalEnv):
         """
         ns, reward, done, infos = self.env.step(a)
         infos['observation'] = ns
-  
-        nq = self.env.model.nq
-        distance =  - 2 * np.linalg.norm(ns[...,:nq-2] - self.goal[...,:nq-2], ord=2)
-        distance_reward = np.exp(distance)
-        velocity_diff = -.5 * np.linalg.norm(ns[...,(nq-2):] - self.goal[...,(nq-2):], ord=2)
-        velocity_reward = np.exp(velocity_diff)
-        reward = 0 * distance_reward + 1* velocity_reward
+
+        reward = self._reward_function(ns)
         ns = self._base_obs_to_state(ns)
         return ns, reward, done, infos
+
+    def _reward_function(self):
+        raise NotImplementedError
 
     def observation(self, state):
         """
