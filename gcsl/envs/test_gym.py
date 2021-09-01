@@ -1,6 +1,6 @@
-from mujoco.ant import AntEnv
+from mujoco.reacher import ReacherEnv
 
-env = AntEnv()
+env = ReacherEnv()
 
 # env is created, now we can use it: 
 for episode in range(10): 

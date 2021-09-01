@@ -78,7 +78,7 @@ class AntGoalBase(goal_env.GoalEnv):
         distance_reward = np.exp(distance)
         velocity_diff = -.5 * np.linalg.norm(ns[...,(nq-2):] - self.goal[...,(nq-2):], ord=2)
         velocity_reward = np.exp(velocity_diff)
-        reward = 0.8 * distance_reward + 0.2 * velocity_reward
+        reward = 0 * distance_reward + 1* velocity_reward
         ns = self._base_obs_to_state(ns)
         return ns, reward, done, infos
 

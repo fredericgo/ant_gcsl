@@ -12,9 +12,9 @@ class AntFixedGoalEnv(AntGoalBase):
         super(AntFixedGoalEnv, self).__init__()
         
     def _sample_goal(self):
-        qpos = self.env.init_qpos
+        qpos = self.env.init_qpos.copy()
         qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
-        qvel = self.env.init_qvel
+        qvel = self.env.init_qvel.copy()
         self.goal = np.concatenate([qpos[2:], qvel])
 
     def _extract_z(self, goal):
