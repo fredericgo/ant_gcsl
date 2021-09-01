@@ -8,3 +8,4 @@ for episode in range(10):
     for step in range(50):
         action = env.action_space.sample()  # or given a custom model, action = policy(observation)
         nobs, reward, done, info = env.step(action)
+        env.render()

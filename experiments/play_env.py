@@ -6,7 +6,7 @@ import pathlib
 import sys
 sys.path.append('./')
 
-env_name = 'ant_fixed'
+env_name = 'reacher_goal'
 
 gpu = True
 seed = 0
