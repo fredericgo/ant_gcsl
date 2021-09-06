@@ -12,7 +12,7 @@ from rl.networks import GaussianPolicy
 output_dir = '/tmp', 
 env_name = 'ant_fixed_goal'
 
-model_dir = 'runs/2021-08-31_17-39-13_SAC_ant_fixed_goal_Gaussian'
+model_dir = 'runs/2021-09-02_00-22-41_SAC_ant_fixed_goal_Gaussian'
 video_file = 'video.mp4'
 hidden_size = 512
 gpu = True

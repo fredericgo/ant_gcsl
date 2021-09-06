@@ -9,9 +9,9 @@ sys.path.append('./')
 import imageio
 
 output_dir = '/tmp', 
-env_name = 'reacher_goal'
+env_name = 'ant_fixed_goal'
 
-model_dir = 'runs/ant_fixed_goal_2021-08-30_13-58-51'
+model_dir = 'runs/ant_fixed_goal_2021-09-02_17-10-47'
 video_file = 'video.mp4'
 gpu = True
 seed = 0

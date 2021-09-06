@@ -11,6 +11,7 @@ class AntFixedGoalEnv(AntGoalBase):
     def __init__(self, fixed_start=True):
         super(AntFixedGoalEnv, self).__init__()
     
+    """
     def _reward_function(self, obs):
         nq = self.env.model.nq
         distance =  - .2 * np.linalg.norm(obs[...,:nq-2] - self.goal[...,:nq-2], ord=2)
@@ -18,6 +19,18 @@ class AntFixedGoalEnv(AntGoalBase):
         velocity_diff = -.2 * np.linalg.norm(obs[...,(nq-2):] - self.goal[...,(nq-2):], ord=2)
         velocity_reward = np.exp(velocity_diff)
         reward = 1 * distance_reward + 1* velocity_reward
+        return reward 
+    """
+
+    def _reward_function(self, obs):
+        nq = self.env.model.nq
+        root_diff =  - .2 * np.linalg.norm(obs[...,:5] - self.goal[...,:5], ord=2)
+        root_reward = np.exp(root_diff)
+        distance =  - np.linalg.norm(obs[...,5:(nq-2)] - self.goal[...,5:(nq-2)], ord=2)
+        distance_reward = np.exp(distance)
+        velocity_diff = -.2 * np.linalg.norm(obs[...,(nq-2):] - self.goal[...,(nq-2):], ord=2)
+        velocity_reward = np.exp(velocity_diff)
+        reward = 1 * root_reward + .1 * distance_reward + .1 * velocity_reward
         return reward 
 
     def _sample_goal(self):

@@ -20,7 +20,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         self.do_simulation(a, self.frame_skip)
         xposafter = self.get_body_com("torso")[0]
         state = self.state_vector()
-        notdone = np.isfinite(state).all() and state[2] >= 0.27 and state[2] <= 1.0
+        notdone = np.isfinite(state).all() and state[2] >= 0.25 and state[2] <= 1.0
         done = not notdone
         ob = self._get_obs()
         return (ob, 0, done, dict(),)
@@ -36,7 +36,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
     def reset_model(self):
         nq = self.model.nq
         num_jnt = self.model.njnt
-        noise = .1
+        noise = 1
 
         qpos = self.init_qpos.copy()
         qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])

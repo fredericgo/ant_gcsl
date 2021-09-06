@@ -35,7 +35,7 @@ parser.add_argument('--seed', type=int, default=123456, metavar='N',
                     help='random seed (default: 123456)')
 parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
-parser.add_argument('--num_steps', type=int, default=4000001, metavar='N',
+parser.add_argument('--num_steps', type=int, default=1600000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 parser.add_argument('--max_trajectory_length', type=int, default=50, metavar='N',
                     help='maximum number of steps (default: 1000000)')
