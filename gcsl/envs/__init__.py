@@ -17,8 +17,11 @@ from gcsl.envs.ant_fixed_env import AntFixedGoalEnv
 from gcsl.envs.ant_z_env import AntZGoalEnv
 from gcsl.envs.ant_fixed_goal_env import AntFixedGoalEnv
 from gcsl.envs.reacher_goal_env import ReacherGoalEnv
+from gcsl.envs.ant_root_goal_env import AntRootGoalEnv
 
-env_names = ['ant', 'ant_onehand', 'ant_fixed', 'ant_z', 'ant_fixed_goal', 'reacher_goal']
+env_names = ['ant', 'ant_onehand', 'ant_fixed', 
+             'ant_z', 'ant_fixed_goal', 'reacher_goal',
+             'ant_root_goal']
 
 def create_env(env_name):
     """Helper function."""
@@ -35,6 +38,8 @@ def create_env(env_name):
         return AntFixedGoalEnv()
     elif env_name == 'reacher_goal':
         return ReacherGoalEnv()
+    elif env_name == 'ant_root_goal':
+        return AntRootGoalEnv()
 
 def get_env_params(env_name, images=False):
     assert env_name in env_names
@@ -65,6 +70,10 @@ def get_env_params(env_name, images=False):
             goal_threshold=0.05,
         )
     elif env_name == 'ant_fixed_goal':
+        env_specific_params = dict(
+            goal_threshold=0.05,
+        )
+    elif env_name == 'ant_root_goal':
         env_specific_params = dict(
             goal_threshold=0.05,
         )

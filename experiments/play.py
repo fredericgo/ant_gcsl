@@ -9,9 +9,11 @@ sys.path.append('./')
 import imageio
 
 output_dir = '/tmp', 
-env_name = 'reacher_goal'
+#env_name = 'reacher_goal'
 
-model_dir = 'runs/ant_fixed_goal_2021-08-30_13-58-51'
+env_name = 'ant_fixed_goal'
+
+model_dir = 'runs/ant_fixed_goal_2021-09-03_00-09-57'
 video_file = 'video.mp4'
 gpu = True
 seed = 0
@@ -60,8 +62,8 @@ def sample_init(greedy=False, noise=0, render=False):
 def sample_trajectory(writer, greedy=False, noise=0):
     goal_state = env.sample_goal()
     goal = env.extract_goal(goal_state)
-    qpos = np.concatenate([[0, 0],goal[:(env.inner_env.model.nq-2)]])
-    qvel = goal[(env.inner_env.model.nq-2):]
+    qpos = np.concatenate([[0, 0],goal[:(env.env.model.nq-2)]])
+    qvel = goal[(env.env.model.nq-2):]
     env.set_state(qpos, qvel)
 
     for _ in range(100):
