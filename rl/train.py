@@ -187,6 +187,7 @@ for i_episode in itertools.count(1):
         # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
         mask = 1 if episode_steps == args.max_trajectory_length else float(not done)
         memory.push(state, action, reward, next_state, goal, mask) # Append transition to memory
+
         state = next_state
 
         if episode_steps == args.max_trajectory_length: 
