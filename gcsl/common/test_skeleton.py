@@ -9,8 +9,9 @@ sk = Skeleton(env.env)
 
 goal = env.sample_goal()
 goal = env.extract_goal(goal)
-goal = torch.as_tensor(goal)
+goal[1:5] = [0, 0, 1, 0]
 
+goal = torch.as_tensor(goal)
 x = sk.get_joint_locations(goal)
 
 print(x)

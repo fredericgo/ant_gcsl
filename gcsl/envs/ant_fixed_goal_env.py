@@ -5,12 +5,13 @@ from gym import spaces
 import gym 
 from gcsl.envs.mujoco.ant import Env
 from collections import OrderedDict
-
+from gcsl.common.geometry import SkeletonGeometry
 
 class AntFixedGoalEnv(AntGoalBase):
     def __init__(self, fixed_start=True):
         super(AntFixedGoalEnv, self).__init__()
-    
+        self.skeleton = SkeletonGeometry(self.env)
+
     """
     def _reward_function(self, obs):
         nq = self.env.model.nq
@@ -23,6 +24,13 @@ class AntFixedGoalEnv(AntGoalBase):
     """
 
     def _reward_function(self, obs):
+
+        goal_pos = self.skeleton.get_joint_locations(self.goal)
+        cur_pos = self.skeleton.get_joint_locations(obs)
+
+        pos_err = -40* np.linalg.norm(goal_pos - cur_pos, ord=2)
+        pos_reward = np.exp(pos_err)
+
         nq = self.env.model.nq
         root_diff =  - .2 * np.linalg.norm(obs[...,:5] - self.goal[...,:5], ord=2)
         root_reward = np.exp(root_diff)
@@ -30,7 +38,7 @@ class AntFixedGoalEnv(AntGoalBase):
         distance_reward = np.exp(distance)
         velocity_diff = -.2 * np.linalg.norm(obs[...,(nq-2):] - self.goal[...,(nq-2):], ord=2)
         velocity_reward = np.exp(velocity_diff)
-        reward = 1 * root_reward + .1 * distance_reward + .1 * velocity_reward
+        reward = .8 * distance_reward + .1 * velocity_reward + .1 * pos_reward
         return reward 
 
     def _sample_goal(self):
