@@ -10,17 +10,6 @@ from collections import OrderedDict
 class AntFixedGoalEnv(AntGoalBase):
     def __init__(self, fixed_start=True):
         super(AntFixedGoalEnv, self).__init__()
-    
-    """
-    def _reward_function(self, obs):
-        nq = self.env.model.nq
-        distance =  - .2 * np.linalg.norm(obs[...,:nq-2] - self.goal[...,:nq-2], ord=2)
-        distance_reward = np.exp(distance)
-        velocity_diff = -.2 * np.linalg.norm(obs[...,(nq-2):] - self.goal[...,(nq-2):], ord=2)
-        velocity_reward = np.exp(velocity_diff)
-        reward = 1 * distance_reward + 1* velocity_reward
-        return reward 
-    """
 
     def _reward_function(self, obs):
         nq = self.env.model.nq
