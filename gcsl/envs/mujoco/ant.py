@@ -39,6 +39,9 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         noise = 0.2
 
         qpos = self.init_qpos.copy()
+        qpos[2] = .26
+        qpos[3:7] = np.array([0, 0, 1., 0.])
+
         qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
         qpos += np.random.randn(nq) * noise
         qvel = self.init_qvel.copy() + np.random.randn(self.model.nv) * noise
