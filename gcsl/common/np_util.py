@@ -1,6 +1,8 @@
 import numpy as np
 
-
+def quaternion_to_angle(quaternion):
+    return 2 * np.arccos(quaternion[..., 0])
+    
 def quaternion_apply(quaternion, point):
     """
     Apply the rotation given by a quaternion to a 3D point.
