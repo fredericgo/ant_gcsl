@@ -40,7 +40,7 @@ class AntFixedGoalEnv(AntGoalBase):
         vel_diff = (obs[...,(nq-2):] - self.goal[...,(nq-2):])**2   
         vel_diff[:6] *= self.joint_weights[0]
         vel_diff[6:] *= self.joint_weights[1:]
-        vel_distance = -.2 * np.sum(vel_diff)
+        vel_distance = -.2 * np.sum(vel_diff[:6])
         velocity_reward = np.exp(vel_distance)
 
         reward = .8 * distance_reward + .1 * velocity_reward + .1 * xpos_reward
