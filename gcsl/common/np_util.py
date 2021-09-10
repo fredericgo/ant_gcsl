@@ -1,5 +1,7 @@
 import numpy as np
 
+def quaternion_to_angle(quaternion):
+    return 2 * np.arccos(quaternion[..., 0])
 
 def quaternion_apply(quaternion, point):
     """

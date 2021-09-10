@@ -12,7 +12,7 @@ from rl.networks import GaussianPolicy
 output_dir = '/tmp', 
 env_name = 'ant_fixed_goal'
 
-model_dir = 'runs/2021-09-07_23-36-14_SAC_ant_fixed_goal_Gaussian'
+model_dir = 'runs/2021-09-09_15-15-02_SAC_ant_fixed_goal_Gaussian'
 video_file = 'video.mp4'
 hidden_size = 512
 gpu = True
@@ -60,7 +60,7 @@ def sample_trajectory(writer, greedy=False, noise=0):
     qvel = goal[(env.env.model.nq-2):]
     env.set_state(qpos, qvel)
 
-    for _ in range(100):
+    for _ in range(30):
         env.render()
 
     
@@ -83,14 +83,15 @@ def sample_trajectory(writer, greedy=False, noise=0):
         action = np.clip(action, env.action_space.low, env.action_space.high)
         
         actions.append(action)
-        state, _, done, _ = env.step(action)
+        state, r, done, _ = env.step(action)
+        print(r)
        
     return np.stack(states), np.array(actions), goal_state
 
 load_policy(model_dir)
 
 writer = imageio.get_writer(video_file, fps=30) 
-for _ in range(10):
+for _ in range(20):
     sample_trajectory(writer)
 
 #sample_init(noise=1, render=True)
