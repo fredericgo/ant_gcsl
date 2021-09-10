@@ -88,14 +88,15 @@ def sample_trajectory(writer, greedy=False, noise=0):
         action = np.clip(action, env.action_space.low, env.action_space.high)
         
         actions.append(action)
-        state, _, done, _ = env.step(action)
+        state, r, done, _ = env.step(action)
+        print(r)
        
     return np.stack(states), np.array(actions), goal_state
 
 load_policy(model_dir)
 
 writer = imageio.get_writer(video_file, fps=30) 
-for _ in range(10):
+for _ in range(20):
     sample_trajectory(writer)
 
 #sample_init(noise=1, render=True)
