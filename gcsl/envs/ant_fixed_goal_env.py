@@ -14,7 +14,7 @@ class AntFixedGoalEnv(AntGoalBase):
     def __init__(self, fixed_start=True):
         super(AntFixedGoalEnv, self).__init__()
         self.skeleton = SkeletonGeometry(self.env)
-        self.joint_weights = np.array([1., .5, .3, .5, .3, .5, .3, .5, .3])
+        self.joint_weights = np.array([1., .5, .3, .5, .3, .5, .3, .5, .3], dtype=np.float32)
 
     def _reward_function(self, obs):
         nq = self.env.model.nq
@@ -61,10 +61,16 @@ class AntFixedGoalEnv(AntGoalBase):
         q_diff = quaternion_multiply(obs[...,1:5], quaternion_invert(goal[...,1:5]))
         q_diff = quaternion_to_angle(q_diff)
 
-        distance = h_diff + q_diff
+        diff = (obs[...,5:(nq-2)] - goal[...,5:(nq-2)])**2   
+        diff *= self.joint_weights[1:]
+        diff = torch.sum(diff, axis=-1)
+
+        distance = h_diff + q_diff + diff
         distance_reward = torch.exp(-1 * distance)
 
         vel_diff = (obs[...,(nq-2):] - goal[...,(nq-2):])**2   
+        vel_diff[..., :6] *= self.joint_weights[0]
+        vel_diff[..., 6:] *= self.joint_weights[1:]
         
         vel_distance = torch.sum(vel_diff[..., :6], axis=-1)
         velocity_reward = torch.exp(-.2* vel_distance)
