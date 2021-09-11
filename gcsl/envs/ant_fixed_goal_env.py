@@ -55,22 +55,24 @@ class AntFixedGoalEnv(AntGoalBase):
         nq = self.env.model.nq
 
         # TODO: Deepmimic use q1*q0.conj() -> then calculate the angle 
+
         goal = torch.as_tensor(self.goal, device=obs.device, dtype=torch.float32)
+        joint_weights = torch.as_tensor(self.joint_weights, device=obs.device, dtype=torch.float32)
         h_diff = (obs[...,0] - goal[...,0])**2
 
         q_diff = quaternion_multiply(obs[...,1:5], quaternion_invert(goal[...,1:5]))
         q_diff = quaternion_to_angle(q_diff)
 
         diff = (obs[...,5:(nq-2)] - goal[...,5:(nq-2)])**2   
-        diff *= self.joint_weights[1:]
+        diff *= joint_weights[1:]
         diff = torch.sum(diff, axis=-1)
 
         distance = h_diff + q_diff + diff
         distance_reward = torch.exp(-1 * distance)
 
         vel_diff = (obs[...,(nq-2):] - goal[...,(nq-2):])**2   
-        vel_diff[..., :6] *= self.joint_weights[0]
-        vel_diff[..., 6:] *= self.joint_weights[1:]
+        vel_diff[..., :6] *= joint_weights[0]
+        vel_diff[..., 6:] *= joint_weights[1:]
         
         vel_distance = torch.sum(vel_diff[..., :6], axis=-1)
         velocity_reward = torch.exp(-.2* vel_distance)
