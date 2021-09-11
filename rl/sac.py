@@ -73,7 +73,9 @@ class SAC(object):
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         action_batch = torch.FloatTensor(action_batch).to(self.device)
         goal_batch = torch.FloatTensor(goal_batch).to(self.device)
-        reward_batch = self.reward_function(state_batch, goal_batch).unsqueeze(-1)
+        
+        #reward_batch = self.reward_function(state_batch, goal_batch).unsqueeze(-1)
+        reward_batch = self.env.calc_reward(state_batch).unsqueeze(-1)
         #reward_batch = torch.FloatTensor(reward_batch).to(self.device).unsqueeze(-1)
         #mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
 

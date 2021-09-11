@@ -1,12 +1,13 @@
 from gcsl.envs.ant_goal_base import AntGoalBase
 
+import torch
 import numpy as np
 from gym import spaces
 import gym 
 from gcsl.envs.mujoco.ant import Env
 from collections import OrderedDict
 from gcsl.common.geometry import SkeletonGeometry
-from gcsl.common.np_util import quaternion_invert, quaternion_multiply, quaternion_to_angle
+from gcsl.common.torch_util import quaternion_invert, quaternion_multiply, quaternion_to_angle
 
 
 class AntFixedGoalEnv(AntGoalBase):
@@ -44,6 +45,31 @@ class AntFixedGoalEnv(AntGoalBase):
         velocity_reward = np.exp(vel_distance)
 
         reward = .8 * distance_reward + .1 * velocity_reward + .1 * xpos_reward
+        return reward 
+
+    def calc_reward(self, obs: torch.Tensor):
+        """
+        a reward function that for HER
+        obs: torch.Tensor
+        """
+        nq = self.env.model.nq
+
+        # TODO: Deepmimic use q1*q0.conj() -> then calculate the angle 
+        goal = torch.as_tensor(self.goal, device=obs.device, dtype=torch.float32)
+        h_diff = (obs[...,0] - goal[...,0])**2
+
+        q_diff = quaternion_multiply(obs[...,1:5], quaternion_invert(goal[...,1:5]))
+        q_diff = quaternion_to_angle(q_diff)
+
+        distance = h_diff + q_diff
+        distance_reward = torch.exp(-1 * distance)
+
+        vel_diff = (obs[...,(nq-2):] - goal[...,(nq-2):])**2   
+        
+        vel_distance = torch.sum(vel_diff[..., :6], axis=-1)
+        velocity_reward = torch.exp(-.2* vel_distance)
+
+        reward = .8 * distance_reward + .1 * velocity_reward
         return reward 
 
 

@@ -73,9 +73,9 @@ class AntGoalBase(goal_env.GoalEnv):
         ns, reward, done, infos = self.env.step(a)
         infos['observation'] = ns
 
-        reward = self._reward_function(ns)
+        #reward = self._reward_function(ns)
         ns = self._base_obs_to_state(ns)
-        return ns, reward, done, infos
+        return ns, 0, done, infos
 
     def _reward_function(self):
         raise NotImplementedError
