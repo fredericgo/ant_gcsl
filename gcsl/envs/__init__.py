@@ -18,10 +18,12 @@ from gcsl.envs.ant_z_env import AntZGoalEnv
 from gcsl.envs.ant_fixed_goal_env import AntFixedGoalEnv
 from gcsl.envs.reacher_goal_env import ReacherGoalEnv
 from gcsl.envs.ant_root_goal_env import AntRootGoalEnv
+from gcsl.envs.ant_curriculum_goal_env import AntCurriculumGoalEnv
+
 
 env_names = ['ant', 'ant_onehand', 'ant_fixed', 
              'ant_z', 'ant_fixed_goal', 'reacher_goal',
-             'ant_root_goal']
+             'ant_root_goal', 'ant_curriculum_goal']
 
 def create_env(env_name):
     """Helper function."""
@@ -40,6 +42,8 @@ def create_env(env_name):
         return ReacherGoalEnv()
     elif env_name == 'ant_root_goal':
         return AntRootGoalEnv()
+    elif env_name == 'ant_curriculum_goal':
+        return AntCurriculumGoalEnv()
 
 def get_env_params(env_name, images=False):
     assert env_name in env_names

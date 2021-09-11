@@ -14,7 +14,6 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
         mujoco_env.MujocoEnv.__init__(self, xml_file, 5)
         utils.EzPickle.__init__(self)
     
-
     def step(self, a):
         xposbefore = self.get_body_com("torso")[0]
         self.do_simulation(a, self.frame_skip)
@@ -40,7 +39,7 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
 
         qpos = self.init_qpos.copy()
         qpos[2] = .26
-        qpos[3:7] = np.array([0, 0, 1., 0.])
+        qpos[3:7] = np.array([0, 0, 1, 0])
 
         qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
         qpos += np.random.randn(nq) * noise
@@ -50,4 +49,3 @@ class Env(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def viewer_setup(self):
         self.viewer.cam.distance = self.model.stat.extent * .5
-       
