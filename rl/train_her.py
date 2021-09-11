@@ -12,7 +12,7 @@ from rl.buffer import ReplayBuffer
 from gcsl.envs import create_env
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
-parser.add_argument('--env-name', default="ant_fixed",
+parser.add_argument('--env-name', default="ant_curriculum_goal",
                     help='Mujoco Gym environment (default: HalfCheetah-v2)')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
@@ -112,6 +112,7 @@ def sample_trajectory(env, greedy=False, noise=0, render=False):
         state = next_state
         rewards.append(reward)
         next_states.append(next_state)
+    env.update_time(t+1)
     return np.stack(states), np.array(actions), np.stack(next_states), goal_state, np.stack(rewards)
 
 

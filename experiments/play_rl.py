@@ -13,7 +13,7 @@ output_dir = '/tmp',
 env_name = 'ant_curriculum_goal'
 
 model_dir = 'runs/2021-09-09_15-15-02_SAC_ant_fixed_goal_Gaussian'
-video_file = 'video.mp4'
+video_file = None #'video.mp4'
 hidden_size = 512
 gpu = True
 interactive = False if video_file else True
@@ -91,13 +91,19 @@ def sample_trajectory(writer, greedy=False, noise=0):
         state, r, done, _ = env.step(action)
        
     env.update_time(t+1)
-    return np.stack(states), np.array(actions), goal_state
+    return np.stack(states), np.array(actions), goal_state, t+1
 
 load_policy(model_dir)
 
-writer = imageio.get_writer(video_file, fps=30) 
+if video_file:
+    writer = imageio.get_writer(video_file, fps=30) 
+else:
+    writer = None
+
+total_timesteps = 0
 for _ in range(20):
     sample_trajectory(writer)
+
 
 #sample_init(noise=1, render=True)
 

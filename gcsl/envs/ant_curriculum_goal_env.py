@@ -1,5 +1,5 @@
 from gcsl.envs.ant_goal_base import AntGoalBase
-
+import torch
 import numpy as np
 from gym import spaces
 import gym 
@@ -21,7 +21,40 @@ class AntCurriculumGoalEnv(AntGoalBase):
         self.total_timesteps = 0
 
     def update_time(self, timestep):
-        self.total_timesteps = timestep
+        self.total_timesteps += timestep
+
+    def calc_reward(self, obs: torch.Tensor):
+        """
+        a reward function that for HER
+        obs: torch.Tensor
+        """
+        nq = self.env.model.nq
+
+        # TODO: Deepmimic use q1*q0.conj() -> then calculate the angle 
+
+        goal = torch.as_tensor(self.goal, device=obs.device, dtype=torch.float32)
+        joint_weights = torch.as_tensor(self.joint_weights, device=obs.device, dtype=torch.float32)
+        h_diff = (obs[...,0] - goal[...,0])**2
+
+        q_diff = quaternion_multiply(obs[...,1:5], quaternion_invert(goal[...,1:5]))
+        q_diff = quaternion_to_angle(q_diff)
+
+        diff = (obs[...,5:(nq-2)] - goal[...,5:(nq-2)])**2   
+        diff *= joint_weights[1:]
+        diff = torch.sum(diff, axis=-1)
+
+        distance = h_diff + q_diff + diff
+        distance_reward = torch.exp(-1 * distance)
+
+        vel_diff = (obs[...,(nq-2):] - goal[...,(nq-2):])**2   
+        vel_diff[..., :6] *= joint_weights[0]
+        vel_diff[..., 6:] *= joint_weights[1:]
+        
+        vel_distance = torch.sum(vel_diff[..., :6], axis=-1)
+        velocity_reward = torch.exp(-.2* vel_distance)
+
+        reward = .8 * distance_reward + .1 * velocity_reward
+        return reward 
 
     def _reward_function(self, obs):
         nq = self.env.model.nq
