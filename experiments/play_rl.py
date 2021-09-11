@@ -16,6 +16,7 @@ model_dir = 'runs/2021-09-09_15-15-02_SAC_ant_fixed_goal_Gaussian'
 video_file = 'video.mp4'
 hidden_size = 512
 gpu = True
+interactive = False if video_file else True
 seed = 0
 
 # Envs
@@ -61,7 +62,10 @@ def sample_trajectory(writer, greedy=False, noise=0):
     env.set_state(qpos, qvel)
 
     for _ in range(30):
-        env.render()
+        if interactive:
+            env.render()
+        else:
+            writer.append_data(env.render(mode="rgb_array"))
     
     states = []
     actions = []
@@ -69,8 +73,10 @@ def sample_trajectory(writer, greedy=False, noise=0):
     state = env.reset()
     done = False
     for t in range(max_path_length):
-        env.render()
-
+        if interactive:
+            env.render()
+        else:
+            writer.append_data(env.render(mode="rgb_array"))
         states.append(state)
         if done:
             state = env.reset()
