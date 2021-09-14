@@ -1,7 +1,45 @@
 import numpy as np
 
-def quaternion_to_angle(quaternion):
+def quaternion_normalize(quaternion, eps: float = 1.0e-12):
+    r"""Normalizes a quaternion.
+
+    The quaternion should be in (x, y, z, w) format.
+
+    Args:
+        quaternion: a tensor containing a quaternion to be normalized.
+          The tensor can be of shape :math:`(*, 4)`.
+        eps: small value to avoid division by zero.
+
+    Return:
+        the normalized quaternion of shape :math:`(*, 4)`.
+
+    Example:
+        >>> quaternion = torch.tensor((1., 0., 1., 0.))
+        >>> normalize_quaternion(quaternion)
+        tensor([0.7071, 0.0000, 0.7071, 0.0000])
+    """
+
+    if not quaternion.shape[-1] == 4:
+        raise ValueError(f"Input must be a tensor of shape (*, 4). Got {quaternion.shape}")
+    
+    def normalize(x: np.ndarray):
+        """
+        function that normalizes each row of the matrix x to have unit length.
+
+        Args:
+        ``x``: A numpy matrix of shape (n, m)
+
+        Returns:
+        ``x``: The normalized (by row) numpy matrix.
+        """
+        return x / np.linalg.norm(x, ord=2, axis=-1, keepdims=True)
+    return normalize(quaternion)
+
+
+def quaternion_to_angle(quaternion):   
+    quaternion = quaternion_normalize(quaternion)
     return 2 * np.arccos(quaternion[..., 0])
+
     
 def quaternion_apply(quaternion, point):
     """

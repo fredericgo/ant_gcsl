@@ -4,6 +4,7 @@ from gcsl.envs.mujoco.ant import Env
 import numpy as np
 import gym
 from gym.spaces import Box
+from gcsl.common.np_util import quaternion_invert, quaternion_multiply, quaternion_to_angle
 
 
 class AntRootGoalEnv(goal_env.GoalEnv):
@@ -88,10 +89,15 @@ class AntRootGoalEnv(goal_env.GoalEnv):
 
     def _reward_function(self, obs):
         nq = self.env.model.nq
-        distance =  - np.linalg.norm(obs[...,:5] - self.goal[...,:5], ord=2)
-        distance_reward = np.exp(distance)
-        reward = 1 * distance_reward
-        return reward 
+        # TODO: Deepmimic use q1*q0.conj() -> then calculate the angle 
+        h_diff = np.sum((obs[...,:1] - self.goal[...,:1]**2))
+
+        q_diff = quaternion_multiply(obs[...,1:5], quaternion_invert(self.goal[...,1:5]))
+        q_diff = quaternion_to_angle(q_diff)
+
+        distance = h_diff + q_diff
+        distance_reward = np.exp(-1 * distance)
+        return distance_reward 
 
     def observation(self, state):
         """

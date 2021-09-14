@@ -60,16 +60,16 @@ class SAC(object):
 
     def update_parameters(self, memory, batch_size, updates):
         # Sample a batch from memory
-        #state_batch, action_batch, reward_batch, next_state_batch, goal_batch, mask_batch = memory.sample(batch_size=batch_size)
-        state_batch, action_batch, next_state_batch, goal_batch, _, _, _, mask_batch = memory.sample_batch(self.batch_size)            
+        state_batch, action_batch, reward_batch, next_state_batch, goal_batch, mask_batch = memory.sample(batch_size=batch_size)
+        #state_batch, action_batch, next_state_batch, goal_batch, _, _, _, mask_batch = memory.sample_batch(self.batch_size)            
         state_batch = torch.FloatTensor(state_batch).to(self.device)
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         action_batch = torch.FloatTensor(action_batch).to(self.device)
         goal_batch = torch.FloatTensor(goal_batch).to(self.device)
         
         #reward_batch = self.reward_function(state_batch, goal_batch).unsqueeze(-1)
-        reward_batch = self.env.calc_reward(state_batch, goal_batch).unsqueeze(-1)
-        #reward_batch = torch.FloatTensor(reward_batch).to(self.device).unsqueeze(-1)
+        #reward_batch = self.env.calc_reward(state_batch, goal_batch).unsqueeze(-1)
+        reward_batch = torch.FloatTensor(reward_batch).to(self.device).unsqueeze(-1)
         mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
 
         state_batch = self.env.observation(state_batch)
