@@ -7,11 +7,11 @@ from gcsl.envs.mujoco.ant import Env
 from collections import OrderedDict
 from gcsl.common.geometry import SkeletonGeometry
 from gcsl.common.torch_util import quaternion_invert, quaternion_multiply, quaternion_to_angle
+import functools
 
-
-class AntCurriculumGoalEnv(AntGoalBase):
+class AntCurriculumInitEnv(AntGoalBase):
     def __init__(self, fixed_start=True):
-        super(AntCurriculumGoalEnv, self).__init__()
+        super(AntCurriculumInitEnv, self).__init__()
         self.skeleton = SkeletonGeometry(self.env)
         self.joint_weights = np.array([1., .5, .3, .5, .3, .5, .3, .5, .3])
 
@@ -19,6 +19,18 @@ class AntCurriculumGoalEnv(AntGoalBase):
         self.final_rotation = np.array([1., 0., 0., 0.], dtype=np.float32)
         self.annealing_time = 2000000
         self.total_timesteps = 0
+
+        def _reset_model(ins):
+            qpos = ins.init_qpos.copy()
+            alpha = min(self.total_timesteps / float(self.annealing_time), 1.)
+            qpos[2] = .26
+            qpos[3:7] = alpha * self.initial_rotation + (1. - alpha) * self.final_rotation
+            qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
+            qvel = ins.init_qvel.copy()
+            ins.set_state(qpos, qvel)
+            return ins._get_obs()
+        
+        self.env.reset_model = functools.partial(_reset_model, self.env)
 
     def update_time(self, timestep):
         self.total_timesteps += timestep
@@ -91,8 +103,6 @@ class AntCurriculumGoalEnv(AntGoalBase):
     def _sample_goal(self):
         qpos = self.env.init_qpos.copy()
         # LERP initial goal and final goal
-        alpha = min(self.total_timesteps / float(self.annealing_time), 1.)
-        qpos[3:7] = (1 - alpha) * self.initial_rotation + alpha * self.final_rotation
         qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
         qvel = self.env.init_qvel.copy()
         self.goal = np.concatenate([qpos[2:], qvel])

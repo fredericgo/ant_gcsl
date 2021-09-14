@@ -1,7 +1,35 @@
 import torch
+import torch.nn.functional as F
 
 
-def quaternion_to_angle(quaternion):
+def quaternion_normalize(quaternion: torch.Tensor, eps: float = 1.0e-12) -> torch.Tensor:
+    r"""Normalizes a quaternion.
+
+    The quaternion should be in (x, y, z, w) format.
+
+    Args:
+        quaternion: a tensor containing a quaternion to be normalized.
+          The tensor can be of shape :math:`(*, 4)`.
+        eps: small value to avoid division by zero.
+
+    Return:
+        the normalized quaternion of shape :math:`(*, 4)`.
+
+    Example:
+        >>> quaternion = torch.tensor((1., 0., 1., 0.))
+        >>> normalize_quaternion(quaternion)
+        tensor([0.7071, 0.0000, 0.7071, 0.0000])
+    """
+    if not isinstance(quaternion, torch.Tensor):
+        raise TypeError(f"Input type is not a torch.Tensor. Got {type(quaternion)}")
+
+    if not quaternion.shape[-1] == 4:
+        raise ValueError(f"Input must be a tensor of shape (*, 4). Got {quaternion.shape}")
+    return F.normalize(quaternion, p=2.0, dim=-1, eps=eps)
+
+
+def quaternion_to_angle(quaternion):   
+    quaternion = quaternion_normalize(quaternion)
     return 2 * torch.arccos(quaternion[..., 0])
 
 

@@ -77,7 +77,7 @@ agent = SAC(env, args)
 
 #Tesnorboard
 datetime_st = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-log_dir = f'runs/{datetime_st}_SAC_{args.env_name}_{args.policy}'
+log_dir = f'runs/{datetime_st}_SAC_{args.env_name}_{args.policy}_novel'
 writer = SummaryWriter(log_dir)
 
 
@@ -168,6 +168,8 @@ for i_episode in itertools.count(1):
         writer.add_scalar('loss/policy', policy_loss, updates)
         writer.add_scalar('loss/entropy_loss', ent_loss, updates)
         writer.add_scalar('entropy_temprature/alpha', alpha, updates)
+        writer.add_scalar('policy/action', actions.mean(), updates)
+
         updates += 1
     
 

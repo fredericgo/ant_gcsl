@@ -73,7 +73,6 @@ class QNetwork(nn.Module):
         x2 = F.relu(self.linear4(xu))
         x2 = F.relu(self.linear5(x2))
         x2 = self.linear6(x2)
-
         return x1, x2
 
 
@@ -111,9 +110,11 @@ class GaussianPolicy(nn.Module):
     def sample(self, state, goal):
         mean, log_std = self.forward(state, goal)
         std = log_std.exp()
+          
         normal = Normal(mean, std)
         x_t = normal.rsample()  # for reparameterization trick (mean + std * N(0,1))
         y_t = torch.tanh(x_t)
+
         action = y_t * self.action_scale + self.action_bias
         log_prob = normal.log_prob(x_t)
         # Enforcing Action Bound

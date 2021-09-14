@@ -83,9 +83,10 @@ class ReplayBuffer:
         time_idxs_1 = np.floor(prop_idxs_1 * (self._length_of_traj[traj_idxs]-1)).astype(int)
         time_idxs_2 = np.floor(prop_idxs_2 * (self._length_of_traj[traj_idxs])).astype(int)
         time_idxs_2[time_idxs_1 == time_idxs_2] += 1
-
+        
         time_state_idxs = np.minimum(time_idxs_1, time_idxs_2)
         time_goal_idxs = np.maximum(time_idxs_1, time_idxs_2)
+
         return traj_idxs, time_state_idxs, time_goal_idxs
 
     def sample_batch(self, batch_size):
@@ -119,8 +120,9 @@ class ReplayBuffer:
         horizons = horizons >= lengths[..., None]
 
         weights = np.ones(batch_size)
+        mask = (self._length_of_traj[traj_idxs]-2) == time_state_idxs
 
-        return observations, actions, next_observations, goals, lengths, horizons, weights
+        return observations, actions, next_observations, goals, lengths, horizons, weights, mask
     
     def save(self, file_name):
         np.savez(file_name,
