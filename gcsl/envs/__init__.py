@@ -21,11 +21,14 @@ from gcsl.envs.ant_root_goal_env import AntRootGoalEnv
 from gcsl.envs.ant_curriculum_goal_env import AntCurriculumGoalEnv
 from gcsl.envs.ant_curriculum_init_env import AntCurriculumInitEnv
 from gcsl.envs.ant_root_rotate_env import AntRootRotateEnv
+from gcsl.envs.ant_root_goal_vel_env import AntRootGoalVelEnv
+
 
 env_names = ['ant', 'ant_onehand', 'ant_fixed', 
              'ant_z', 'ant_fixed_goal', 'reacher_goal',
              'ant_root_goal', 'ant_curriculum_goal',
-             'ant_curriculum_init', 'ant_root_rotate']
+             'ant_curriculum_init', 'ant_root_rotate', 
+             'ant_root_goal_vel']
 
 def create_env(env_name):
     """Helper function."""
@@ -50,6 +53,8 @@ def create_env(env_name):
         return AntCurriculumInitEnv()
     elif env_name == 'ant_root_rotate':
         return AntRootRotateEnv()
+    elif env_name == 'ant_root_goal_vel':
+        return AntRootGoalVelEnv()
 
 def get_env_params(env_name, images=False):
     assert env_name in env_names
