@@ -10,9 +10,9 @@ import imageio
 from rl.networks import GaussianPolicy
 
 output_dir = '/tmp', 
-env_name = 'ant_root_goal'
+env_name = 'ant_root_goal_vel'
 
-model_dir = 'runs/2021-09-15_13-35-05_SAC_ant_root_goal_rootrotation'
+model_dir = 'runs/2021-09-16_00-44-05_SAC_ant_root_goal_vel_root_initvel'
 video_file = None #'video.mp4'
 hidden_size = 512
 gpu = True
@@ -89,7 +89,6 @@ def sample_trajectory(writer, greedy=False, noise=0):
         
         actions.append(action)
         state, r, done, _ = env.step(action)
-       
     #env.update_time(t+1)
     return np.stack(states), np.array(actions), goal_state, t+1
 

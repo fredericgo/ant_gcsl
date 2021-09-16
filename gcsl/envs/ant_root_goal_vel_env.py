@@ -46,11 +46,11 @@ class AntRootGoalVelEnv(goal_env.GoalEnv):
         
         def _reset_model(ins):
             qpos = ins.init_qpos.copy()
-            alpha = min(self.total_timesteps / float(self.annealing_time), 1.)
             qpos[2] = .26
+            qpos[3:7] = np.array([0, 0, 1, 0])
             qpos[7:] = np.array([0.,  1,   0.,   -1.,   0.,   -1.,   0.,  1.])
             qvel = ins.init_qvel.copy()
-            qvel[:3] = np.random.uniform(-10, 10, 3) 
+            qvel[4:7] = np.random.uniform(-10, 10, 3) 
             ins.set_state(qpos, qvel)
             return ins._get_obs()
         
